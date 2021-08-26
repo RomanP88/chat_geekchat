@@ -6,3 +6,4 @@ public interface AuthService {
 
     boolean changeNick(String oldNickname, String newNickname);
 }
+

@@ -1,7 +1,6 @@
 package server;
 
-public class DBAuthService implements AuthService{
-
+public class DBAuthService implements AuthService {
     @Override
     public String getNicknameByLoginAndPassword(String login, String password) {
         return SQLHandler.getNicknameByLoginAndPassword(login, password);
@@ -12,8 +11,10 @@ public class DBAuthService implements AuthService{
         return SQLHandler.registration(login, password, nickname);
     }
 
+
     @Override
     public boolean changeNick(String oldNickname, String newNickname) {
-        return false;
+        return SQLHandler.changeNick(oldNickname, newNickname);
     }
 }
+

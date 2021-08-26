@@ -25,7 +25,7 @@ public class ClientHandler {
 
             new Thread(() -> {
                 try {
-                    socket.setSoTimeout(1200000);  // Добавляем отключение неавторизованных пользователей по таймауту
+                    socket.setSoTimeout(120000);
                     //цикл аутентификации
                     while (true) {
                         String str = in.readUTF();
@@ -41,9 +41,9 @@ public class ClientHandler {
                                     sendMsg(Command.AUTH_OK + " " + nickname);
                                     server.subscribe(this);
                                     System.out.println("client " + nickname + " connected " + socket.getRemoteSocketAddress());
+                                    socket.setSoTimeout(0);
 
-                                    socket.setSoTimeout(0);   // Добавляем отключение неавторизованных пользователей по таймауту
-                                    sendMsg(SQLHandler.getMessageForNick(nickname));
+                                  //  sendMsg(SQLHandler.getMessageForNick(nickname));
 
                                     break;
                                 } else {
@@ -80,7 +80,6 @@ public class ClientHandler {
                         if (str.startsWith("/")) {
                             if (str.equals(Command.END)) {
                                 sendMsg(Command.END);
-
                                 break;
                             }
                             if (str.startsWith(Command.PRV_MSG)) {
@@ -90,27 +89,25 @@ public class ClientHandler {
                                 }
                                 server.privateMsg(this, token[1], token[2]);
                             }
-                            if (str.startsWith("/chnick")) {
-                                String[] token = str.split("\\s", 2);
+
+                            if (str.startsWith(Command.CHANGE_NICK)) {
+                                String[] token = str.split("\\s+", 2);
                                 if (token.length < 2) {
                                     continue;
                                 }
-
-                             if (token[1].contains(" ")){
-                                 sendMsg("Ник нен может содержать пробелов");
-                                 continue;
-                             }
-                             if(server.getAuthService().changeNick(this.nickname, token[1])){
-                                 sendMsg("/yournicks " + token[1]);
-                                 sendMsg("Ваш ник изменен на " + token[1]);
-                                 this.nickname = token[1];
-                                 server.broadcastClientList();
-                             } else {
-                                 sendMsg("Не удалось изменить ник на " + token[1] + " уже существует");
-                             }
+                                if (token[1].contains(" ")) {
+                                    sendMsg("Ник не может содержать пробелов");
+                                    continue;
+                                }
+                                if (server.getAuthService().changeNick(this.nickname, token[1])) {
+                                    sendMsg(Command.YOUR_NICKS + token[1]);
+                                    sendMsg("Ваш ник изменен на " + token[1]);
+                                    this.nickname = token[1];
+                                    server.broadcastClientList();
+                                } else {
+                                    sendMsg("Не удалось изменить ник. Ник " + token[1] + " уже существует");
+                                }
                             }
-
-
 
                         } else {
                             server.broadcastMsg(this, str);
@@ -118,7 +115,6 @@ public class ClientHandler {
                     }
                 } catch (SocketTimeoutException e) {
                     sendMsg(Command.END);
-
                 } catch (RuntimeException e) {
                     System.out.println(e.getMessage());
                 } catch (IOException e) {
