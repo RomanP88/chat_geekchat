@@ -12,6 +12,7 @@
         <module>client</module>
         <module>server</module>
         <module>command</module>
+        <module>java3_hw</module>
     </modules>
 
     <properties>
